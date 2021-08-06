@@ -2,11 +2,17 @@ import glob
 import time
 import datetime
 import argparse
+import board
+import adafruit_dht
 from influxdb import InfluxDBClient
 
-base_dir = '/sys/bus/w1/devices/'
-device_folder = glob.glob(base_dir + '28*')[0]
-device_file = device_folder + '/w1_slave'
+# Initialize the dht device, with data pin connected to:
+# dhtDevice = adafruit_dht.DHT22(board.D4)
+
+# you can pass DHT22 use_pulseio=False if you wouldn't like to use pulseio.
+# This may be necessary on a Linux single board computer like the Raspberry Pi,
+# but it will not work in CircuitPython.
+dhtDevice = adafruit_dht.DHT22(board.D4, use_pulseio=False)
 
 def get_args():
     '''This function parses and returns arguments passed in'''
@@ -22,6 +28,8 @@ def get_args():
     '-rn','--run', type=str, help='Run number', required=False, default=now.strftime("%Y%m%d%H%M"))
     parser.add_argument(
     '-dt','--samplingrate', type=int, help='Sampling rate in seconds (default: 60)', required=False, default=60)
+    parser.add_argument(
+    '-v','--verbose', type=str, help='Be loud and noisy', required=False, default="no")
     # Array of all arguments passed to script
     args=parser.parse_args()
     # Assign args to variables
@@ -29,28 +37,17 @@ def get_args():
     runNo=args.run
     session=args.session
     sampling_rate=args.samplingrate
-    return dbname, session, runNo, sampling_rate
+    be_verbose = args.verbose
+    return dbname, session, runNo, sampling_rate, be_verbose
 
-def read_temp_raw():
-    f = open(device_file, 'r')
-    lines = f.readlines()
-    f.close()
-    return lines
-
-def read_temp():
-    lines = read_temp_raw()
-    while lines[0].strip()[-3:] != 'YES':
-        time.sleep(0.2)
-        lines = read_temp_raw()
-    equals_pos = lines[1].find('t=')
-    if equals_pos != -1:
-        temp_string = lines[1][equals_pos+2:]
-        temp = float(temp_string) / 1000.0
-        return temp
+def read_sensor():
+    temperature = dhtDevice.temperature
+    humidity = dhtDevice.humidity
+    return temperature, humidity
 
 def get_data_points():
     # Get the three measurement values from the SenseHat sensors
-    current_temp = read_temp()
+    current_temp, current_humidity = read_sensor()
     timestamp = datetime.datetime.utcnow().isoformat()
 
     # Create Influxdb datapoints (using lineprotocol as of Influxdb >1.1)
@@ -60,7 +57,8 @@ def get_data_points():
             "tags": {"runNum": runNo},
             "time": timestamp,
             "fields": {
-                "temp_now": cpu_usage,
+                "temp_now": current_temp,
+                "humid_now" : current_humidity,
             }
         }
     ]
@@ -73,6 +71,7 @@ print "Session: ", session
 print "Run No: ", runNo
 print "DB name: ", dbname
 print "Sampling rate: ", sampling_rate
+print "Verbose mode: ", be_verbose
 
 # Initialize the Influxdb client
 client = InfluxDBClient(host, port, user, password, dbname)
@@ -81,11 +80,20 @@ try:
         # Write datapoints to InfluxDB
         datapoints=get_data_points()
         bResult=client.write_points(datapoints)
-        print("Write points {0} Bresult:{1}".format(datapoints,bResult))
+        if be_verbose == "yes":
+            print("Write points {0} Bresult:{1}".format(datapoints,bResult))
 
         # Wait for next sample
         time.sleep(sampling_rate)
 
-# Run until keyboard ctrl-c
+except RuntimeError as error:
+    print(error.args[0])
+    time.sleep(sampling_rate)
+    continue
+
+except Exception as error:
+    dhtDevice.exit()
+    raise error
+
 except KeyboardInterrupt:
-    print ("Program stopped by keyboard interrupt [CTRL_C] by user. ")
+    print ("Program stopped by keyboard interrupt [CTRL+C] by user. ")
