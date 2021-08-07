@@ -78,11 +78,11 @@ def get_data_points():
 # Match return values from get_arguments()
 # and assign to their respective variables
 dbname, session, runNo, sampling_rate = get_args()
-print "Session: ", session
-print "Run No: ", runNo
-print "DB name: ", dbname
-print "Sampling rate: ", sampling_rate
-print "Verbose mode: ", be_verbose
+print("Session: ", session)
+print("Run No: ", runNo)
+print("DB name: ", dbname)
+print("Sampling rate: ", sampling_rate)
+print("Verbose mode: ", be_verbose)
 
 # Initialize dht sensor
 dhtDevice = initialize_dht()
@@ -111,4 +111,4 @@ while True:
         raise error
 
     except KeyboardInterrupt:
-        print ("Program stopped by keyboard interrupt [CTRL+C] by user. ")
+        print("Program stopped by keyboard interrupt [CTRL+C] by user. ")
