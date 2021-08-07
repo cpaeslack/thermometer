@@ -12,10 +12,7 @@ fi
 sensor=${1}
 fname=thermometer_${sensor}.py
 
-if [ "${sensor}" == "DHT22" ]
-then
-    python3 ${fname} -db=sensordata -sn=test -gpio=D4 -v yes -dt 10
-elif [ "${sensor}" == "DS18B20" ]
+if [ "${sensor}" == "DHT22" ] || [ "${sensor}" == "DS18B20" ]
 then
     python3 ${fname} -db=sensordata -sn=test -v yes -dt 10
 else
