@@ -9,7 +9,6 @@ host = "192.168.178.51" #Could also set local ip address
 port = 8086
 user = "admin"
 password = "admin"
-dbname = "sensordata"
 
 base_dir = '/sys/bus/w1/devices/'
 device_folder = glob.glob(base_dir + '28*')[0]

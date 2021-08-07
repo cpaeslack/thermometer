@@ -11,7 +11,6 @@ host = "192.168.178.51" #Could also set local ip address
 port = 8086
 user = "admin"
 password = "admin"
-dbname = "sensordata"
 
 def get_args():
     '''This function parses and returns arguments passed in'''
