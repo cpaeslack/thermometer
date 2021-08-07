@@ -75,8 +75,9 @@ print "Verbose mode: ", be_verbose
 
 # Initialize the Influxdb client
 client = InfluxDBClient(host, port, user, password, dbname)
-try:
-    while True:
+
+while True:
+    try:
         # Write datapoints to InfluxDB
         datapoints=get_data_points()
         bResult=client.write_points(datapoints)
@@ -86,14 +87,14 @@ try:
         # Wait for next sample
         time.sleep(sampling_rate)
 
-except RuntimeError as error:
-    print(error.args[0])
-    time.sleep(sampling_rate)
-    continue
+    except RuntimeError as error:
+        print(error.args[0])
+        time.sleep(sampling_rate)
+        continue
 
-except Exception as error:
-    dhtDevice.exit()
-    raise error
+    except Exception as error:
+        dhtDevice.exit()
+        raise error
 
-except KeyboardInterrupt:
-    print ("Program stopped by keyboard interrupt [CTRL+C] by user. ")
+    except KeyboardInterrupt:
+        print ("Program stopped by keyboard interrupt [CTRL+C] by user. ")
