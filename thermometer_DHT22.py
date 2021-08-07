@@ -85,7 +85,7 @@ print("Sampling rate: ", sampling_rate)
 print("Verbose mode: ", be_verbose)
 
 # Initialize dht sensor
-dhtDevice = initialize_dht()
+dhtDevice = initialize_dht(gpio_pin)
 
 # Initialize the Influxdb client
 client = InfluxDBClient(host, port, user, password, dbname)
