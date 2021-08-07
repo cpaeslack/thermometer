@@ -5,6 +5,12 @@ import argparse
 import glob
 from influxdb import InfluxDBClient
 
+host = "192.168.178.51" #Could also set local ip address
+port = 8086
+user = "admin"
+password = "admin"
+dbname = "sensordata"
+
 base_dir = '/sys/bus/w1/devices/'
 device_folder = glob.glob(base_dir + '28*')[0]
 device_file = device_folder + '/w1_slave'
@@ -35,10 +41,13 @@ def get_args():
     be_verbose = args.verbose
     return dbname, session, runNo, sampling_rate, be_verbose
 
-def read_sensor():
+def read_temp_raw():
     f = open(device_file, 'r')
     lines = f.readlines()
     f.close()
+    return lines
+
+def read_sensor():
     lines = read_temp_raw()
     while lines[0].strip()[-3:] != 'YES':
         time.sleep(0.2)

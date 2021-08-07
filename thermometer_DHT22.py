@@ -6,13 +6,12 @@ import board
 import adafruit_dht
 from influxdb import InfluxDBClient
 
-# Initialize the dht device, with data pin connected to:
-# dhtDevice = adafruit_dht.DHT22(board.D4)
-
-# you can pass DHT22 use_pulseio=False if you wouldn't like to use pulseio.
-# This may be necessary on a Linux single board computer like the Raspberry Pi,
-# but it will not work in CircuitPython.
-dhtDevice = adafruit_dht.DHT22(board.D4, use_pulseio=False)
+# Set required InfluxDB parameters.
+host = "192.168.178.51" #Could also set local ip address
+port = 8086
+user = "admin"
+password = "admin"
+dbname = "sensordata"
 
 def get_args():
     '''This function parses and returns arguments passed in'''
@@ -30,6 +29,8 @@ def get_args():
     '-dt','--samplingrate', type=int, help='Sampling rate in seconds (default: 60)', required=False, default=60)
     parser.add_argument(
     '-v','--verbose', type=str, help='Be loud and noisy', required=False, default="no")
+    parser.add_argument(
+    '-gpio','--gpio_pin', type=str, help='ID of GPIO pin on raspberrypi (e.g. as "D4" for GPIO4)', required=True)
     # Array of all arguments passed to script
     args=parser.parse_args()
     # Assign args to variables
@@ -38,7 +39,18 @@ def get_args():
     session=args.session
     sampling_rate=args.samplingrate
     be_verbose = args.verbose
-    return dbname, session, runNo, sampling_rate, be_verbose
+    gpio_pin = args.gpio_pin
+    return dbname, session, runNo, sampling_rate, be_verbose, gpio_pin
+
+def initialize_dht(pin):
+    # Initialize the dht device, with data pin connected to:
+    # dhtDevice = adafruit_dht.DHT22(board.D4)
+
+    # you can pass DHT22 use_pulseio=False if you wouldn't like to use pulseio.
+    # This may be necessary on a Linux single board computer like the Raspberry Pi,
+    # but it will not work in CircuitPython.
+    dhtDevice = adafruit_dht.DHT22(board.pin, use_pulseio=False)
+    return dhtDevice
 
 def read_sensor():
     temperature = dhtDevice.temperature
@@ -72,6 +84,9 @@ print "Run No: ", runNo
 print "DB name: ", dbname
 print "Sampling rate: ", sampling_rate
 print "Verbose mode: ", be_verbose
+
+# Initialize dht sensor
+dhtDevice = initialize_dht()
 
 # Initialize the Influxdb client
 client = InfluxDBClient(host, port, user, password, dbname)
