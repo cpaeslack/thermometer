@@ -77,7 +77,7 @@ def get_data_points():
 
 # Match return values from get_arguments()
 # and assign to their respective variables
-dbname, session, runNo, sampling_rate = get_args()
+dbname, session, runNo, sampling_rate, be_verbose, gpio_pin = get_args()
 print("Session: ", session)
 print("Run No: ", runNo)
 print("DB name: ", dbname)
