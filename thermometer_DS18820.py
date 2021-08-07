@@ -2,17 +2,12 @@ import glob
 import time
 import datetime
 import argparse
-import board
-import adafruit_dht
+import glob
 from influxdb import InfluxDBClient
 
-# Initialize the dht device, with data pin connected to:
-# dhtDevice = adafruit_dht.DHT22(board.D4)
-
-# you can pass DHT22 use_pulseio=False if you wouldn't like to use pulseio.
-# This may be necessary on a Linux single board computer like the Raspberry Pi,
-# but it will not work in CircuitPython.
-dhtDevice = adafruit_dht.DHT22(board.D4, use_pulseio=False)
+base_dir = '/sys/bus/w1/devices/'
+device_folder = glob.glob(base_dir + '28*')[0]
+device_file = device_folder + '/w1_slave'
 
 def get_args():
     '''This function parses and returns arguments passed in'''
@@ -41,13 +36,22 @@ def get_args():
     return dbname, session, runNo, sampling_rate, be_verbose
 
 def read_sensor():
-    temperature = dhtDevice.temperature
-    humidity = dhtDevice.humidity
-    return temperature, humidity
+    f = open(device_file, 'r')
+    lines = f.readlines()
+    f.close()
+    lines = read_temp_raw()
+    while lines[0].strip()[-3:] != 'YES':
+        time.sleep(0.2)
+        lines = read_temp_raw()
+    equals_pos = lines[1].find('t=')
+    if equals_pos != -1:
+        temp_string = lines[1][equals_pos+2:]
+        temp_c = float(temp_string) / 1000.0
+        return temp_c
 
 def get_data_points():
     # Get the three measurement values from the SenseHat sensors
-    current_temp, current_humidity = read_sensor()
+    current_temp= read_sensor()
     timestamp = datetime.datetime.utcnow().isoformat()
 
     # Create Influxdb datapoints (using lineprotocol as of Influxdb >1.1)
@@ -57,8 +61,7 @@ def get_data_points():
             "tags": {"runNum": runNo},
             "time": timestamp,
             "fields": {
-                "temp_now_dht22": current_temp,
-                "humid_now_dht22" : current_humidity,
+                "temp_now_ds18820": current_temp,
             }
         }
     ]
