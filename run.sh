@@ -2,6 +2,7 @@
 set -e
 
 helptext="provide type of sensor ('DHT22' or 'DS18B20')"
+dir="/home/pi/Code/thermometer"
 
 if [ -z "$1" ]
 then
@@ -14,7 +15,7 @@ fname=thermometer_${sensor}.py
 
 if [ "${sensor}" == "DHT22" ] || [ "${sensor}" == "DS18B20" ]
 then
-    python3 ${fname} -db=sensordata -sn=test -v yes -dt 10
+    python3 ${dir}/${fname} -db=sensordata -sn=test -v no -dt 30
 else
     echo ${helptext}
     exit
