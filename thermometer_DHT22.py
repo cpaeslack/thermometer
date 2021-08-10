@@ -9,8 +9,8 @@ from influxdb import InfluxDBClient
 # Set required InfluxDB parameters.
 host = "192.168.178.51" #Could also set local ip address
 port = 8086
-user = "admin"
-password = "admin"
+user = "dbuser"
+password = "07Gn-xaYj-CGbc-y1s1"
 
 def get_args():
     '''This function parses and returns arguments passed in'''

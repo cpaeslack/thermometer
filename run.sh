@@ -15,7 +15,9 @@ fname=thermometer_${sensor}.py
 
 if [ "${sensor}" == "DHT22" ] || [ "${sensor}" == "DS18B20" ]
 then
-    python3 ${dir}/${fname} -db=sensordata -sn=test -v no -dt 30
+    python3 ${dir}/${fname} -db=sensordata \
+                            -sn=test \
+                            -v=no -dt=30 > "/home/pi/log/sensor-${sensor}.log"
 else
     echo ${helptext}
     exit
