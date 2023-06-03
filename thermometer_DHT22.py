@@ -6,6 +6,7 @@ import os
 import time
 import Adafruit_DHT
 from influxdb import InfluxDBClient
+import sys
 
 
 class Sensor:
@@ -83,11 +84,11 @@ def main():
     # Match return values from get_arguments()
     # and assign to their respective variables
     dbname, session, runNo, sampling_rate, be_verbose = get_args()
-    logging.info("Session: ", session)
-    logging.info("Run No: ", runNo)
-    logging.info("DB name: ", dbname)
-    logging.info("Sampling rate: ", sampling_rate)
-    logging.info("Verbose mode: ", be_verbose)
+    logging.info(f"Session: {session}")
+    logging.info(f"Run No: {runNo}")
+    logging.info(f"DB name: {dbname}")
+    logging.info(f"Sampling rate: {sampling_rate}")
+    logging.info(f"Verbose mode: {be_verbose}")
 
     while True:
         sensor = Sensor(SENSOR_PIN)
@@ -116,6 +117,7 @@ def main():
             logging.info(
                 "Program stopped by keyboard interrupt [CTRL+C] by user. "
             )
+            sys.exit(0)
 
 
 def get_args():
